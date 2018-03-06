@@ -1,0 +1,169 @@
+  <!DOCTYPE html> 
+  <!-- The previous line tells the browser, that the page uses the HTML5 standard. --> 
+  
+  <html>
+  <head>
+  	<title>Tu Dien</title> 
+  	<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1"> 
+
+
+  	<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1"> 
+  	<style type="text/css"> 
+  		body { 
+
+  			background-color: #000000; 
+
+  			overflow: hidden; 
+  		} 
+  	</style> 
+  	<script src="js/three.js"></script> 
+  	<script src="js/Detector.js"></script> 
+  	<script src="js/CanvasRenderer.js"></script> 
+  	<script src="js/Projector.js"></script>
+  	<script src="js/TetrahedronGeometry.js "></script>
+  	<script src="js/OrbitControls.js"></script>
+  	<script src='js/geometry.js'></script>
+  	<script src='js/dat.gui.min.js'></script>
+
+
+  </head> 
+  <body>
+  	<button id = "btn_zout">Zoom out</button>
+  	<br>
+  	<button id = "btn_zin">Zoom In</button>
+  	the id 'WebGLCanvas' is applied to it. --> 
+  	<div id="WebGLCanvas"> 
+
+  		<script> 
+  			var scene; 
+  			var camera; 
+  			var pyramidMesh = []; 
+  			var geometry = new THREE.TetrahedronBufferGeometry( 1, 0 );
+  			var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
+
+		//var gui = new dat.GUI();
+
+		var renderer = new THREE.WebGLRenderer( { antialias: true } );
+		renderer.setSize( window.innerWidth, window.innerHeight );
+		renderer.setPixelRatio( window.devicePixelRatio );
+
+		document.body.appendChild( renderer.domElement );
+
+
+		initializeScene(); 
+
+		animateScene(); 
+
+		function initializeScene(){ 
+			if(Detector.webgl){ 
+				renderer = new THREE.WebGLRenderer({antialias:true}); 
+
+			} else { 
+				renderer = new THREE.CanvasRenderer(); 
+			} 
+
+			renderer.setClearColor(0x000000, 1); 
+
+			canvasWidth = window.innerWidth; 
+			canvasHeight = window.innerHeight; 
+
+			renderer.setSize(canvasWidth, canvasHeight); 
+
+
+			document.getElementById("WebGLCanvas").appendChild(renderer.domElement); 
+
+
+        //scene = new THREE.Scene(); 
+        scene = new THREE.Scene(geometry); 
+        
+
+
+        camera = new THREE.PerspectiveCamera(45, canvasWidth / canvasHeight, 1, 100); 
+        camera.position.set(0, 0, 10); 
+        camera.lookAt(scene.position); 
+        var controls = new THREE.OrbitControls( camera );
+        scene.add(camera); 
+
+        var pyramidGeometry = new THREE.CylinderGeometry(0, 1, 1, 4, false); 
+
+
+        for(i = 0; i < pyramidGeometry.faces.length; i++){ 
+        	if(pyramidGeometry.faces[i] instanceof THREE.Face4){ 
+        		pyramidGeometry.faces[i].vertexColors[0] = new THREE.Color(0xFF0000); 
+        		if((i % 2) == 0){ 
+        			pyramidGeometry.faces[i].vertexColors[1] = new THREE.Color(0x00FF00); 
+        			pyramidGeometry.faces[i].vertexColors[2] = new THREE.Color(0x0000FF); 
+        		} else { 
+        			pyramidGeometry.faces[i].vertexColors[1] = new THREE.Color(0x0000FF); 
+        			pyramidGeometry.faces[i].vertexColors[2] = new THREE.Color(0x00FF00); 
+        		} 
+        		pyramidGeometry.faces[i].vertexColors[3] = new THREE.Color(0xFF0000); 
+        	} else { 
+        		pyramidGeometry.faces[i].vertexColors[0] = new THREE.Color(0xFF0000); 
+        		pyramidGeometry.faces[i].vertexColors[1] = new THREE.Color(0x00FF00); 
+        		pyramidGeometry.faces[i].vertexColors[2] = new THREE.Color(0x0000FF); 
+        	} 
+        } 
+
+             // 'doubleSided' to 'true'. 
+             var pyramidMaterial = new THREE.MeshBasicMaterial({ 
+             	vertexColors:THREE.VertexColors, 
+             	side:THREE.DoubleSide 
+             }); 
+               // by -1.5 on the x axis and by 4 on the z axis. Finally add the mesh to the scene. 
+               for(var i=0;i<6;i++){
+               	pyramidMesh[i] = new THREE.Mesh(pyramidGeometry, pyramidMaterial);     
+               }
+
+               pyramidMesh[0].position.set(-2.5, -0.5, 4.0); 
+               pyramidMesh[1].position.set(-0.5, -0.5, 4.0); 
+               pyramidMesh[2].position.set(1.5, -0.5, 4.0); 
+               pyramidMesh[3].position.set(-2.5, 1.5, 4.0); 
+               pyramidMesh[4].position.set(-0.5, 1.5, 4.0); 
+               pyramidMesh[5].position.set(1.5, 1.5, 4.0); 
+
+               for(var i=0;i<6;i++){
+               	scene.add(pyramidMesh[i]); 
+               }
+               // Parameter 3: Depth 
+
+           } 
+
+             /** 
+             */ 
+             var options = chooseFromHash( mesh );
+             requestAnimationFrame( render );
+
+             function animateScene(){ 
+
+                 // Increase the y rotation of the triangle 
+                 for(var i=0;i<6;i++){
+                 	pyramidMesh[i].rotation.y += 0.001;      
+                 }
+
+                 requestAnimationFrame(animateScene); 
+                 
+                // Map the 3D scene down to the 2D screen (render the frame) 
+                renderScene(); 
+            } 
+            function animate() {
+
+            	requestAnimationFrame( animate );
+
+  // required if controls.enableDamping or controls.autoRotate are set to true
+  controls.update();
+
+  renderer.render( scene, camera );
+
+}
+            /** 
+              * Render the scene. Map the 3D world to the 2D screen.
+              */ 
+              function renderScene(){ 
+              	renderer.render(scene, camera); 
+              } 
+
+
+          </script> 
+      </body> 
+      </html>
